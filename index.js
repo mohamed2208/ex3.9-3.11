@@ -56,6 +56,16 @@ const options = {
     timeZoneName: 'short'
   }
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
+const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/phonebookApp?`
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const phoneSchema = new mongoose.Schema({
+   name: String,
+   number: String
+})
+const Phonebook = mongoose.model('Phonebook', phoneSchema)
 
 app.get('/api/persons', (request, response) => {
   Phonebook.find({}).then(person => {
@@ -109,16 +119,6 @@ app.post('/api/persons', (request, response) => {
   persons = persons.concat(obj)
   response.json(persons) 
 })
-const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/`
-
-mongoose.set('strictQuery', false)
-mongoose.connect(url)
-
-const phoneSchema = new mongoose.Schema({
-   name: String,
-   number: String
-})
-const Phonebook = mongoose.model('Phonebook', phoneSchema)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT,() => {
