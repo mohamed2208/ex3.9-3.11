@@ -108,7 +108,7 @@ app.post('/api/persons', (request, response) => {
   persons = persons.concat(obj)
   response.json(persons) 
 })
-const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/phonebookApp?`
+const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/`
 
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
@@ -118,7 +118,13 @@ const phoneSchema = new mongoose.Schema({
    number: String
 })
 const Phonebook = mongoose.model('Phonebook', phoneSchema)
- 
+
+app.get('/api/persons', (request, response) => {
+  Phonebook.find({}).then(person => {
+    response.json(person)
+  })
+})
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT,() => {
   console.log(`server started on port ${PORT}`)
