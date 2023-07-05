@@ -58,11 +58,12 @@ const options = {
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
 
 app.get('/api/persons', (request, response) => {
-
-  response.json(persons)
+  Phonebook.find({}).then(person => {
+    response.json(person)
+  })
 })
 app.get('/info', (request, response) => {
-  response.send(`<p>Phonebook has info ${notes.length} people </p>${formattedDateTime}`)
+  response.send(`<p>Phonebook has info ${persons.length} people </p>${formattedDateTime}`)
 
 })
 app.get('/api/persons/:id', (request, response)  => {
@@ -87,7 +88,7 @@ app.post('/api/persons', (request, response) => {
   const number = persons.map(person => person.number)
 
   while(test) {
-    const ids = notes.map(person => person.id)
+    const ids = persons.map(person => person.id)
     if (!ids.includes(randomNum)) {
       test = false
     }
@@ -118,12 +119,6 @@ const phoneSchema = new mongoose.Schema({
    number: String
 })
 const Phonebook = mongoose.model('Phonebook', phoneSchema)
-
-app.get('/api/persons', (request, response) => {
-  Phonebook.find({}).then(person => {
-    response.json(person)
-  })
-})
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT,() => {
