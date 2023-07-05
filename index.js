@@ -1,6 +1,7 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const mongoose = require('mongoose')
 
 const app = express()
 
@@ -57,7 +58,8 @@ const options = {
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+
+  response.json(persons)
 })
 app.get('/info', (request, response) => {
   response.send(`<p>Phonebook has info ${notes.length} people </p>${formattedDateTime}`)
@@ -103,10 +105,20 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({error: 'number must be unique'})
   }
 
-  notes = notes.concat(obj)
-  response.json(notes) 
+  persons = persons.concat(obj)
+  response.json(persons) 
 })
+const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/phonebookApp?`
 
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const phoneSchema = new mongoose.Schema({
+   name: String,
+   number: String
+})
+const Phonebook = mongoose.model('Phonebook', phoneSchema)
+ 
 const PORT = process.env.PORT || 3001
 app.listen(PORT,() => {
   console.log(`server started on port ${PORT}`)
