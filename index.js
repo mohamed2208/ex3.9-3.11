@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
-const mongoose = require('mongoose')
+const Phonebook = require('./modules/person')
+
 
 const app = express()
 
@@ -55,17 +57,16 @@ const options = {
     second: '2-digit',
     timeZoneName: 'short'
   }
+  
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
-const url = `mongodb+srv://user1:${process.argv[2]}@cluster0.ygcsls1.mongodb.net/phonebookApp?`
 
-mongoose.set('strictQuery', false)
-mongoose.connect(url)
-
-const phoneSchema = new mongoose.Schema({
-   name: String,
-   number: String
+const person = new Phonebook({
+  name: 'Bob White',
+  number: '27172182'
 })
-const Phonebook = mongoose.model('Phonebook', phoneSchema)
+person.save().then(result => {
+  console.log('note saved')
+})
 
 app.get('/api/persons', (request, response) => {
   Phonebook.find({}).then(person => {
@@ -92,35 +93,24 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end()
 })
 app.post('/api/persons', (request, response) => {
-  let randomNum = Math.floor(Math.random() * (100000 - 1) + 1)
-  let test = true
-  const names = persons.map(person => person.name)
-  const number = persons.map(person => person.number)
+  const body = request.body
 
-  while(test) {
-    const ids = persons.map(person => person.id)
-    if (!ids.includes(randomNum)) {
-      test = false
-    }
-    randomNum = Math.floor(Math.random() * (100000 - 1) + 1)
-  }
-  const obj = {
-    "id": randomNum,
-    "name": "Adam", 
-    "number": "12-785-897656"
-  }
-  if (names.includes(obj.name)) {
-    return response.status(400).json({error: 'name must be unique'})
-  }
-  else if (names.includes(obj.number)) {
-    return response.status(400).json({error: 'number must be unique'})
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
   }
 
-  persons = persons.concat(obj)
-  response.json(persons) 
+  const person = new Phonebook({
+    
+  })
+
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
+
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT,() => {
   console.log(`server started on port ${PORT}`)
+  console.log('pwd', process.argv[2])
 } )
