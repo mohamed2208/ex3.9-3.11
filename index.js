@@ -60,14 +60,6 @@ const options = {
   
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
 
-const person = new Phonebook({
-  name: 'Bob White',
-  number: '27172182'
-})
-person.save().then(result => {
-  console.log('note saved')
-})
-
 app.get('/api/persons', (request, response) => {
   Phonebook.find({}).then(person => {
     response.json(person)
@@ -95,12 +87,16 @@ app.delete('/api/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (body.content === undefined) {
-    return response.status(400).json({ error: 'content missing' })
+  if (body.name === undefined) {
+    return response.status(400).json({ error: 'name missing' })
+  }
+  else if (body.number === undefined) {
+    return response.status(400).json({ error: 'number missing' })
   }
 
   const person = new Phonebook({
-    
+    name: body.name,
+    number: body.number
   })
 
   person.save().then(savedPerson => {
