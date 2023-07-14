@@ -65,33 +65,50 @@ app.get('/api/persons', (request, response, next) => {
     response.json(person)
   }).catch(error => next(error))
 })
+
 app.get('/info', (request, response, next) => {
   Phonebook.countDocuments({})
   .then(count => {
     response.send(`<p>Phonebook has info ${count} people</p>${formattedDateTime}`)
   }).catch(error => next(error))
 })
+
 app.get('/api/persons/:id', (request, response, next)  => {
   Phonebook.findById(request.params.id)
   .then(result => {
     response.json(result)
   }).catch(error => next(error))
 })
+
 app.delete('/api/persons/:id', (request, response, next) => {
   Phonebook.findByIdAndDelete(request.params.id)
     .then(result => {
       response.status(204).end()
   }).catch(error => next(error))
 })
+
 app.put('/api/persons/:id', (request, response, next) => {
+
+  const { name, number } = request.body
 
   const person = {
     name: request.body.name,
     number: request.body.number
   }
 
-  Phonebook.findByIdAndUpdate(request.params.id, person, {new: true})
+  Phonebook.findByIdAndUpdate(request.params.id,{ name, number }, person, {new: true, runValidators: true, context: 'query'})
   .then(result => {
+    response.json(result)
+  }).catch(error => next(error))
+})
+
+app.post('/api/persons', (request, response, next) => {
+  const body = request.body
+  const person = new Phonebook({
+    name: body.name,
+    number: body.number
+  })
+  person.save().then(result => {
     response.json(result)
   }).catch(error => next(error))
 })
@@ -100,7 +117,7 @@ const errorHandler = (error, request, response, next) => {
   console.log(error.message)
 
   if (error.name ==='CastError') {
-    response.status(400).send({error: 'makformatted id'})
+    response.status(400).send({error: 'malformatted id'})
   }
   else if (error.name === 'ValidationError') {
     response.status(400).json({error: error.message})
