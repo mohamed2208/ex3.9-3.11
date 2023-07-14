@@ -60,50 +60,52 @@ const options = {
   
 const formattedDateTime = currentDate.toLocaleString('en-EU', options)
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Phonebook.find({}).then(person => {
     response.json(person)
-  })
+  }).catch(error => next(error))
 })
-app.get('/info', (request, response) => {
-  response.send(`<p>Phonebook has info ${persons.length} people </p>${formattedDateTime}`)
+app.get('/info', (request, response, next) => {
+  Phonebook.countDocuments({})
+  .then(count => {
+    response.send(`<p>Phonebook has info ${count} people</p>${formattedDateTime}`)
+  }).catch(error => next(error))
+})
+app.get('/api/persons/:id', (request, response, next)  => {
+  Phonebook.findById(request.params.id)
+  .then(result => {
+    response.json(result)
+  }).catch(error => next(error))
+})
+app.delete('/api/persons/:id', (request, response, next) => {
+  Phonebook.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end()
+  }).catch(error => next(error))
+})
+app.put('/api/persons/:id', (request, response, next) => {
 
-})
-app.get('/api/persons/:id', (request, response)  => {
-  const id  = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    response.json(person)
-  }
-  else {
-    response.status(404).end()
-  }
-})
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
-})
-app.post('/api/persons', (request, response) => {
-  const body = request.body
-
-  if (body.name === undefined) {
-    return response.status(400).json({ error: 'name missing' })
-  }
-  else if (body.number === undefined) {
-    return response.status(400).json({ error: 'number missing' })
+  const person = {
+    name: request.body.name,
+    number: request.body.number
   }
 
-  const person = new Phonebook({
-    name: body.name,
-    number: body.number
-  })
-
-  person.save().then(savedPerson => {
-    response.json(savedPerson)
-  })
-
+  Phonebook.findByIdAndUpdate(request.params.id, person, {new: true})
+  .then(result => {
+    response.json(result)
+  }).catch(error => next(error))
 })
+
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name ==='CastError') {
+    response.status(400).send({error: 'makformatted id'})
+  }
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT,() => {
