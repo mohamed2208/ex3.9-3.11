@@ -11,7 +11,11 @@ mongoose.connect(url).then(result => {
   })
 
 const phoneSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
   number: String
 })
 

@@ -102,6 +102,9 @@ const errorHandler = (error, request, response, next) => {
   if (error.name ==='CastError') {
     response.status(400).send({error: 'makformatted id'})
   }
+  else if (error.name === 'ValidationError') {
+    response.status(400).json({error: error.message})
+  }
   next(error)
 }
 
